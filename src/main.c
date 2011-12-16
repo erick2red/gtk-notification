@@ -30,7 +30,9 @@
 #define TOP_WINDOW "window"
 
 static void actioned_signal_handler(GtkWidget * not, gpointer user_data) {
-	g_print("Clicked action button, will do something now\n");
+	g_print("Clicked action button\n");
+	g_print("Wwill do something now, destroy the widget for instance\n");
+	gtk_widget_destroy(not);
 }
 
 static void show_notification_cb(GtkWidget * button, gpointer user_data) {

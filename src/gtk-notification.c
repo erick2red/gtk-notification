@@ -42,6 +42,12 @@
 #define SHADOW_OFFSET 10
 #define SHADOW_RADIUS 5
 
+#define GTK_STYLE_PROVIDER_PRIORITY_FORCE G_MAXUINT
+#define DEFAULT_CSS \
+  ".rounded-box {\n" \
+  "  border-radius: 0 0 5 5;\n" \
+  "}\n"
+
 enum {
 	PROP_0,
 	PROP_MESSAGE,
@@ -94,6 +100,13 @@ G_DEFINE_TYPE(GtkNotification, gtk_notification, GTK_TYPE_BOX);
 static void gtk_notification_init(GtkNotification *notification) {
 	g_object_set(GTK_BOX(notification), "orientation", GTK_ORIENTATION_HORIZONTAL, "homogeneous", FALSE, "spacing", 2, NULL);
 
+	//setting fixed CSS to accomplish the border-radius seen in the mockups
+	GtkStyleProvider *provider = GTK_STYLE_PROVIDER (gtk_css_provider_new ());
+	gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), provider, GTK_STYLE_PROVIDER_PRIORITY_FORCE);
+	gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(provider), DEFAULT_CSS, -1, NULL);
+
+	gtk_style_context_add_class(gtk_widget_get_style_context(GTK_WIDGET(notification)), "rounded-box");
+
 	//FIXME position should be set by properties
 	gtk_widget_set_halign(GTK_WIDGET(notification), GTK_ALIGN_CENTER);
 	gtk_widget_set_valign(GTK_WIDGET(notification), GTK_ALIGN_START);
@@ -135,10 +148,10 @@ static void gtk_notification_init(GtkNotification *notification) {
 static void gtk_notification_finalize(GObject *object) {
 	g_return_if_fail(GTK_IS_NOTIFICATION (object));
 	GtkNotification * notification = GTK_NOTIFICATION(object);
-	if(notification->priv->message_label) {
+	if (notification->priv->message_label) {
 		g_free(notification->priv->message_label);
 	}
-	if(notification->priv->button_label) {
+	if (notification->priv->button_label) {
 		g_free(notification->priv->button_label);
 	}
 
@@ -514,9 +527,6 @@ static void gtk_notification_action_button_clicked_cb(GtkWidget * widget, gpoint
 	g_print("Executing action widget, sending signal and closing\n");
 
 	g_signal_emit_by_name(user_data, "actioned", NULL);
-
-	GtkNotification * notification = GTK_NOTIFICATION(user_data);
-	gtk_widget_destroy(GTK_WIDGET(notification));
 }
 
 GtkWidget * gtk_notification_new(gchar * message, gchar * action) {
