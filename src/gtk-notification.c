@@ -136,9 +136,9 @@ static void gtk_notification_init(GtkNotification *notification) {
 	GtkWidget * close_button_image = gtk_image_new_from_stock(GTK_STOCK_CLOSE, GTK_ICON_SIZE_BUTTON);
 	gtk_button_set_image(GTK_BUTTON(notification->priv->close_button), close_button_image);
 
-	gtk_box_pack_start(GTK_BOX(notification), notification->priv->message, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(notification), notification->priv->action_button, FALSE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(notification), notification->priv->close_button, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(notification), notification->priv->message, FALSE, FALSE, SHADOW_OFFSET);
+	gtk_box_pack_end(GTK_BOX(notification), notification->priv->close_button, FALSE, TRUE, 0);
+	gtk_box_pack_end(GTK_BOX(notification), notification->priv->action_button, FALSE, TRUE, 0);
 
 	gtk_widget_pop_composite_child();
 

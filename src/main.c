@@ -37,6 +37,7 @@ static void actioned_signal_handler(GtkWidget * not, gpointer user_data) {
 
 static void show_notification_cb(GtkWidget * button, gpointer user_data) {
 	GtkWidget * notification = gtk_notification_new("Operation will want to undo", "Undo");
+	gtk_widget_set_size_request(notification, 400, -1);
 	gtk_widget_show(notification);
 	g_signal_connect(notification, "actioned", G_CALLBACK(actioned_signal_handler), NULL);
 
