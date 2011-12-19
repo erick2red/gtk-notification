@@ -2,17 +2,17 @@
 /*
  * gtk-notification.c
  * Copyright (C) Erick Pérez Castellanos 2011 <erick.red@gmail.com>
- * 
+ *
  gtk-notification.c is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
  * by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * gtk-notification.c is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.";
  */
@@ -39,7 +39,7 @@ struct _GtkNotificationClass {
 	GtkBoxClass parent_class;
 
 	/* Signals */
-	void (*actioned)(GtkNotification *self);
+	void (*actioned) (GtkNotification *self);
 };
 
 struct _GtkNotification {
@@ -49,9 +49,9 @@ struct _GtkNotification {
 	GtkNotificationPrivate *priv;
 };
 
-GType gtk_notification_get_type(void) G_GNUC_CONST;
+GType gtk_notification_get_type (void) G_GNUC_CONST;
 
-GtkWidget * gtk_notification_new(gchar * message, gchar * action);
+GtkWidget * gtk_notification_new (gchar * message, gchar * action);
 
 G_END_DECLS
 
