@@ -35,11 +35,16 @@ static void actioned_signal_handler(GtkWidget * not, gpointer user_data) {
 	gtk_widget_destroy(not);
 }
 
+static void destroy_signal_handler(GtkWidget * widget, gpointer user_data) {
+	g_print("Widget will be destroyed\n");
+}
+
 static void show_notification_cb(GtkWidget * button, gpointer user_data) {
 	GtkWidget * notification = gtk_notification_new("Operation will want to undo", "Undo");
 	gtk_widget_set_size_request(notification, 400, -1);
 	gtk_widget_show(notification);
 	g_signal_connect(notification, "actioned", G_CALLBACK(actioned_signal_handler), NULL);
+	g_signal_connect(notification, "destroy", G_CALLBACK(destroy_signal_handler), NULL);
 
 	g_print("Created notification widget\n");
 

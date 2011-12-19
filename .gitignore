@@ -83,3 +83,4 @@ src/gisted-marshal.h
 data/org.gnome.gisted.gschema.xml.in
 data/org.gnome.gisted.gschema.valid
 data/org.gnome.gisted.gschema.xml
+/src/gtk_notification_demo

@@ -29,8 +29,11 @@
  * the user, allowing them to execute 1 action over the notification,
  * or closing it.
  *
- * #GtkNotification provides to signals, one for when the closed button is clicked,
- * another fo the action is called on the notification.
+ * #GtkNotification provides one signal (#GtkNotification::actioned), for when the action button is activated.
+ * Here the user will receive the signal, and then it's up to the user to destroy the widget,
+ * or hide it.
+ * The close button destroy the notification, so you can safely connect to the
+ * #GtkWidget::destroy signal in order to know when the notification has been closed.
  *
  * #GtkNotification, the main difference here with some other widgets, is the timeout
  * inside GtkNotification widget. It mean, when the no action is taken over a period of time,
@@ -153,6 +156,9 @@ static void gtk_notification_finalize(GObject *object) {
 	}
 	if (notification->priv->button_label) {
 		g_free(notification->priv->button_label);
+	}
+	if (notification->priv->timeout_source_id != 0) {
+		g_source_remove(notification->priv->timeout_source_id);
 	}
 
 	G_OBJECT_CLASS (gtk_notification_parent_class)->finalize(object);
@@ -406,14 +412,11 @@ static gboolean gtk_notification_draw(GtkWidget *widget, cairo_t *cr) {
 	GtkStyleContext * context = gtk_widget_get_style_context(widget);
 	gtk_style_context_save(context);
 	//FIXME I don't see the frame drawing at all
-	gtk_render_frame(context, cr, SHADOW_OFFSET / 2, SHADOW_OFFSET / 2, gtk_widget_get_allocated_width(widget) - SHADOW_OFFSET,
-	gtk_widget_get_allocated_height(widget) - SHADOW_OFFSET);
 	gtk_render_background(context,
 			cr,
-			SHADOW_OFFSET / 2,
-			SHADOW_OFFSET / 2,
-			gtk_widget_get_allocated_width(widget) - SHADOW_OFFSET
-			,
+			0,
+			0,
+			gtk_widget_get_allocated_width(widget) - SHADOW_OFFSET,
 			gtk_widget_get_allocated_height(widget) - SHADOW_OFFSET);
 
 	gtk_style_context_restore(context);
@@ -424,7 +427,6 @@ static gboolean gtk_notification_draw(GtkWidget *widget, cairo_t *cr) {
 	/* starting timeout when drawing the first time */
 	GtkNotification * notification = GTK_NOTIFICATION(widget);
 	if (notification->priv->timeout_source_id == 0) {
-		g_print("timeout: %d\n", notification->priv->timeout);
 		notification->priv->timeout_source_id = g_timeout_add(notification->priv->timeout * 1000,
 				gtk_notification_auto_destroy,
 				widget);
@@ -436,8 +438,8 @@ static void gtk_notification_get_preferred_width(GtkWidget *widget, gint *minimu
 	gint parent_minimum_size, parent_natural_size;
 	GTK_WIDGET_CLASS(gtk_notification_parent_class)->get_preferred_width(widget, &parent_minimum_size, &parent_natural_size);
 
-	*minimum_size = parent_minimum_size + 2 * SHADOW_OFFSET;
-	*natural_size = parent_natural_size + 2 * SHADOW_OFFSET;
+	*minimum_size = parent_minimum_size + SHADOW_OFFSET + (SHADOW_OFFSET / 2);
+	*natural_size = parent_natural_size + SHADOW_OFFSET + (SHADOW_OFFSET / 2);
 }
 
 static void gtk_notification_get_preferred_height_for_width(GtkWidget *widget,
@@ -478,16 +480,11 @@ static void gtk_notification_get_preferred_width_for_height(GtkWidget *widget,
 
 static void gtk_notification_size_allocate(GtkWidget *widget, GtkAllocation *allocation) {
 	GtkAllocation parent_allocation;
-	g_print("normal x,y; w,h: %d,%d; %d,%d\n", allocation->x, allocation->y, allocation->width, allocation->height);
-	parent_allocation.x = allocation->x + SHADOW_OFFSET;
-	parent_allocation.y = allocation->y + SHADOW_OFFSET;
+	parent_allocation.x = allocation->x + (SHADOW_OFFSET / 2);
+	parent_allocation.y = allocation->y  + (SHADOW_OFFSET / 2);
 	parent_allocation.width = allocation->width - 2 * SHADOW_OFFSET;
 	parent_allocation.height = allocation->height - 2 * SHADOW_OFFSET;
-	g_print("parent x,y; w,h: %d,%d; %d,%d\n",
-			parent_allocation.x,
-			parent_allocation.y,
-			parent_allocation.width,
-			parent_allocation.height);
+
 	GTK_WIDGET_CLASS(gtk_notification_parent_class)->size_allocate(widget, &parent_allocation);
 
 	gtk_widget_set_allocation(widget, allocation);
@@ -519,13 +516,12 @@ static gboolean gtk_notification_auto_destroy(gpointer user_data) {
 static void gtk_notification_close_button_clicked_cb(GtkWidget * widget, gpointer user_data) {
 	GtkNotification * notification = GTK_NOTIFICATION(user_data);
 	g_source_remove(notification->priv->timeout_source_id);
+	notification->priv->timeout_source_id = 0;
 
 	gtk_widget_destroy(GTK_WIDGET(notification));
 }
 
 static void gtk_notification_action_button_clicked_cb(GtkWidget * widget, gpointer user_data) {
-	g_print("Executing action widget, sending signal and closing\n");
-
 	g_signal_emit_by_name(user_data, "actioned", NULL);
 }
 
